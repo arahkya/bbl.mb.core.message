@@ -11,7 +11,7 @@ namespace bbl.mb.core.message.api
                msgConfig.Uri = new Uri(config.GetValue<string>("kafka:bootstrap:servers"));
                msgConfig.Timeout = TimeSpan.FromSeconds(config.GetValue<int>("kafak:bootstrap:timeout"));
             });
-            services.AddSingleton<MessageManager>();
+            services.AddSingleton<IMessageManager, MessageManager>();
 
             return services;
         }

@@ -13,19 +13,17 @@ namespace bbl.mb.core.message.test.tests
         public async void PostMessageTest_MustSuccess()
         {
             // Arrange
+            var serviceCollection = new ServiceCollection();
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new [] { 
                     new KeyValuePair<string,string>("kafka:bootstrap:servers","localhost:9092"),
                     new KeyValuePair<string,string>("kafak:bootstrap:timeout","10") 
                 })
                 .Build();
-            var serviceCollection = new ServiceCollection();
             
             serviceCollection.AddBBLMessageService(configuration);
 
             var services = serviceCollection.BuildServiceProvider();
-
-            var messageConfigure = new MessageConfigure { Uri = new Uri("http://localhost/core-message") };
             var messagePayload = new MessagePayload<string>
             {
                 Topic = "purchases",
@@ -33,7 +31,7 @@ namespace bbl.mb.core.message.test.tests
             };
 
             // Action
-            var messageMgr = services.GetRequiredService<MessageManager>();
+            var messageMgr = services.GetRequiredService<IMessageManager>();
             var postResult = await messageMgr.PostAsync(messagePayload);
 
             // Assert

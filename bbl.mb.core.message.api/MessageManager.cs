@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace bbl.mb.core.message.api
 {
-    public class MessageManager
+    public class MessageManager : IMessageManager
     {
         private readonly MessageConfigure _messageConfigure;
 
