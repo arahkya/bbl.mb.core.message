@@ -38,19 +38,19 @@ namespace bbl.mb.core.message.api
             this._messageConfigure = messageConfigure.Value;
         }
 
-        public void StartConsume(string topic, CancellationToken cancellationToken)
+        public void StartConsume(MessageConsumerConfigure messageConsumerConfigure, CancellationToken cancellationToken)
         {
-            var bootstrapServer = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
-            var groupId = new KeyValuePair<string, string>("group.id", this._messageConfigure.GroupId.ToString());
-            var offsetReset = new KeyValuePair<string, string>("auto.offset.reset", this._messageConfigure.AutoOffsetReset.ToString());
-            using (var consumer = new ConsumerBuilder<string, string>(new[] 
-            { 
-                bootstrapServer,
-                groupId,
-                offsetReset
+            var bootstrapServerValuePair = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
+            var groupIdValuePair = new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId);
+            var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset);
+            using (var consumer = new ConsumerBuilder<string, string>(new[]
+            {
+                bootstrapServerValuePair,
+                groupIdValuePair,
+                offsetResetValuePair
             }).Build())
             {
-                consumer.Subscribe(topic);
+                consumer.Subscribe(messageConsumerConfigure.Topic);
                 try
                 {
                     while (true)
@@ -58,15 +58,26 @@ namespace bbl.mb.core.message.api
                         var cr = consumer.Consume(cancellationToken);
                         //Console.WriteLine($"Consumed event from topic {topic} with key {cr.Message.Key,-10} and value {cr.Message.Value}");
 
-                        foreach (var observer in observers)
+                        foreach (IMessageConsumeObserver item in observers)
                         {
-                            observer.OnNext(cr.Message.Value);
+                            item.Configure = messageConsumerConfigure;
+                            item.OnNext(cr.Message.Value);
                         }
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    // Ctrl-C was pressed.
+                    foreach (var item in observers)
+                    {
+                        item.OnCompleted();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    foreach (var item in observers)
+                    {
+                        item.OnError(ex);
+                    }
                 }
                 finally
                 {

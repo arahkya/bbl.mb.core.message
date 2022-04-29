@@ -10,10 +10,8 @@ namespace bbl.mb.core.message.api
             services.Configure<MessageConfigure>((msgConfig) => {
                msgConfig.Uri = new Uri(config.GetValue<string>("kafka:bootstrap:servers"));
                msgConfig.Timeout = TimeSpan.FromSeconds(config.GetValue<int>("kafka:bootstrap:timeout"));
-               msgConfig.GroupId = config.GetValue<string>("kafka:group:id");
-               msgConfig.AutoOffsetReset = config.GetValue<string>("kafka:auto:offset:reset");
             });
-            services.AddSingleton<IMessageManager, MessageManager>();
+            services.AddSingleton<IMessageProducer, MessageProducer>();
             services.AddSingleton<IMessageConsumer, MessageConsumer>();
 
             return services;

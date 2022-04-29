@@ -3,11 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace bbl.mb.core.message.api
 {
-    public class MessageManager : IMessageManager
+    public class MessageProducer : IMessageProducer
     {
         private readonly MessageConfigure _messageConfigure;
 
-        public MessageManager(IOptions<MessageConfigure> messageConfigure)
+        public MessageProducer(IOptions<MessageConfigure> messageConfigure)
         {
             this._messageConfigure = messageConfigure.Value;
         }

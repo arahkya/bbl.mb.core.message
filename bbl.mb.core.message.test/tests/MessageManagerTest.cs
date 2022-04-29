@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 using bbl.mb.core.message.test.observers;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace bbl.mb.core.message.test.tests
 {
@@ -35,7 +36,7 @@ namespace bbl.mb.core.message.test.tests
             };
 
             // Action
-            var messageMgr = services.GetRequiredService<IMessageManager>();
+            var messageMgr = services.GetRequiredService<IMessageProducer>();
             var postResult = await messageMgr.PostAsync(messagePayload);
 
             // Assert
@@ -52,9 +53,7 @@ namespace bbl.mb.core.message.test.tests
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
                     new KeyValuePair<string,string>("kafka:bootstrap:servers","localhost:9092"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","10"),
-                    new KeyValuePair<string,string>("kafka:group:id","kafka-dotnet-getting-started"),
-                    new KeyValuePair<string,string>("kafka:auto:offset:reset","earliest")
+                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","10")
                 })
                 .Build();
 
@@ -62,23 +61,26 @@ namespace bbl.mb.core.message.test.tests
 
             var services = serviceCollection.BuildServiceProvider();
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var messageConsumer = services.GetRequiredService<IMessageConsumer>();
-            var messageConsumeObserver = new MessageConsumeObserver();
+            var tasks = new Task[2];
+            // Producer
             var messagePayload = new MessagePayload<string>
             {
                 Topic = "purchases",
                 Payload = "This is test message."
-            };            
-            var messageMgr = services.GetRequiredService<IMessageManager>();
-            var tasks = new Task[2];
+            };
+            var messageProducer = services.GetRequiredService<IMessageProducer>();
+            // Consumer
+            var messageConsumer = services.GetRequiredService<IMessageConsumer>();
+            var messageConsumeObserver = new MessageConsumeObserver();
+            var messageConsumerConfigure = new MessageConsumerConfigure{ Topic = "purchases", GroupdId = "test_group_id", Offset = "earliest" };
 
             // Action
             messageConsumer.Subscribe(messageConsumeObserver);
-
-            tasks[0] = Task.Run(() => {
-                messageConsumer.StartConsume("purchases", cancellationTokenSource.Token);
+            tasks[0] = Task.Run(() =>
+            {
+                messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
             });
-            tasks[1] = messageMgr.PostAsync(messagePayload);
+            tasks[1] = messageProducer.PostAsync(messagePayload);
 
             Task.WaitAll(tasks);
 

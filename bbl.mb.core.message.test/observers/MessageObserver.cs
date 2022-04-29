@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using bbl.mb.core.message.api;
 
 namespace bbl.mb.core.message.test.observers
 {
-    public class MessageConsumeObserver : IObserver<string>
+    public class MessageConsumeObserver : IMessageConsumeObserver
     {
+        public MessageConsumerConfigure Configure { get; set; } = new MessageConsumerConfigure();
         public List<string> Messages = new List<string>();
+
 
         public void OnCompleted()
         {
-            throw new NotImplementedException();
+
         }
 
         public void OnError(Exception error)
