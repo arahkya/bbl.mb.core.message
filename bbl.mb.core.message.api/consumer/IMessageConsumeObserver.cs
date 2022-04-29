@@ -1,4 +1,4 @@
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.consumer
 {
     public interface IMessageConsumeObserver : IObserver<string>
     {

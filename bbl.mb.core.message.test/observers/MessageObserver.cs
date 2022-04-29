@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using bbl.mb.core.message.api;
+using bbl.mb.core.message.api.configures;
+using bbl.mb.core.message.api.consumer;
 
 namespace bbl.mb.core.message.test.observers
 {

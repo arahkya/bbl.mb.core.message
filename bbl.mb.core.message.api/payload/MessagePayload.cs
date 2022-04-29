@@ -1,4 +1,4 @@
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.payload
 {
     public class MessagePayload<T> : IMessagePayload<T>
         where T : class

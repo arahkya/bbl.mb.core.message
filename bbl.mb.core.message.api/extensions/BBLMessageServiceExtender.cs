@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using bbl.mb.core.message.api.configures;
+using bbl.mb.core.message.api.consumer;
+using bbl.mb.core.message.api.producer;
 
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.extensions
 {
     public static class BBLMessageServiceExtender
     {

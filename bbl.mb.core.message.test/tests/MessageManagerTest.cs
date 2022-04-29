@@ -1,5 +1,8 @@
 using Xunit;
-using bbl.mb.core.message.api;
+using bbl.mb.core.message.api.extensions;
+using bbl.mb.core.message.api.consumer;
+using bbl.mb.core.message.api.producer;
+using bbl.mb.core.message.api.payload;
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +11,6 @@ using System.Collections.Generic;
 using System.Threading;
 using bbl.mb.core.message.test.observers;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace bbl.mb.core.message.test.tests
 {

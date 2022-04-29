@@ -1,7 +1,8 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Options;
+using bbl.mb.core.message.api.configures;
 
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.consumer
 {
     public class MessageConsumer : IMessageConsumer
     {

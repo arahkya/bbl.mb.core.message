@@ -1,4 +1,4 @@
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.producer
 {
     #nullable enable
     public class MessageActionResult

@@ -1,4 +1,4 @@
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.configures
 {
     public class MessageConfigure
     {

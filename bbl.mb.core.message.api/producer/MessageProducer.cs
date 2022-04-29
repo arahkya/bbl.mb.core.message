@@ -1,7 +1,9 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Options;
+using bbl.mb.core.message.api.configures;
+using bbl.mb.core.message.api.payload;
 
-namespace bbl.mb.core.message.api
+namespace bbl.mb.core.message.api.producer
 {
     public class MessageProducer : IMessageProducer
     {
