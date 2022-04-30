@@ -4,6 +4,6 @@ namespace bbl.mb.core.message.api.consumer
     {
         public string GroupdId { get; set; }
         public string Topic { get; set; }
-        public string Offset { get; set; }
+        public MessageConsumeOffset Offset { get; set; }
     }
 }

@@ -74,7 +74,7 @@ namespace bbl.mb.core.message.test.tests
             // Consumer
             var messageConsumer = services.GetRequiredService<IMessageConsumer>();
             var messageConsumeObserver = new MessageConsumeObserver();
-            var messageConsumerConfigure = new MessageConsumerConfigure{ Topic = "purchases", GroupdId = "test_group_id", Offset = "earliest" };
+            var messageConsumerConfigure = new MessageConsumerConfigure{ Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Earliest };
 
             // Action
             messageConsumer.Subscribe(messageConsumeObserver);

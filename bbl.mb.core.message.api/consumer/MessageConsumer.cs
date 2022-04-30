@@ -43,7 +43,7 @@ namespace bbl.mb.core.message.api.consumer
         {
             var bootstrapServerValuePair = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
             var groupIdValuePair = new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId);
-            var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset);
+            var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString());
             using (var consumer = new ConsumerBuilder<string, string>(new[]
             {
                 bootstrapServerValuePair,
