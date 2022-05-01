@@ -40,8 +40,9 @@ namespace bbl.mb.core.message.test.tests
         public async void PostMessageTest_MustSuccess()
         {
             // Arrange
-            var messagePayload = new MessagePayload<string>
+            var messagePayload = new MessagePayload
             {
+                Name = "TestMessage",
                 Topic = "purchases",
                 Payload = "This is test message."
             };
@@ -61,8 +62,9 @@ namespace bbl.mb.core.message.test.tests
             // Arrange
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             var tasks = new Task[2];
-            var messagePayload = new MessagePayload<string>
+            var messagePayload = new MessagePayload
             {
+                Name = "TestMessage",
                 Topic = "purchases",
                 Payload = "This is test message."
             };

@@ -14,25 +14,25 @@ namespace bbl.mb.core.message.api.producer
             this._messageConfigure = messageConfigure.Value;
         }
 
-        public async Task<MessageActionResult> PostAsync<T>(MessagePayload<T> messagePayload) where T : class
+        public async Task<MessageActionResult> PostAsync(MessagePayload messagePayload)
         {
             var messageActionResult = new MessageActionResult();
             var bootstrapServer = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
-            var producerBuilder = new ProducerBuilder<string, T>(new[] { bootstrapServer });
+            var producerBuilder = new ProducerBuilder<string, string>(new[] { bootstrapServer });
 
             using (var producer = producerBuilder.Build())
             {
-                var kafkaMessage = new Message<string, T> { Key = messagePayload.Name, Value = messagePayload.Payload };
+                var kafkaMessage = new Message<string, string> { Key = messagePayload.Name, Value = messagePayload.Payload };
                 messageActionResult.MessageId = Guid.NewGuid();
 
                 try
                 {
                     var deliveryReport = await producer.ProduceAsync(messagePayload.Topic, kafkaMessage);
-                    messageActionResult.IsSuccess = true;
-
                     producer.Flush(this._messageConfigure.Timeout);
+
+                    messageActionResult.IsSuccess = true;
                 }
-                catch (ProduceException<string, T> produceException)
+                catch (ProduceException<string, string> produceException)
                 {
                     messageActionResult.Exception = produceException;
                 }

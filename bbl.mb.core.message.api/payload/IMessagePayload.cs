@@ -1,7 +1,7 @@
 namespace bbl.mb.core.message.api.payload
 {
-    public interface IMessagePayload<T> where T : class
+    public interface IMessagePayload
     {
-        T Payload { get; }
+        string Payload { get; }
     }
 }

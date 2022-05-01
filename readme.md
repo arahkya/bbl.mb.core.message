@@ -14,6 +14,13 @@ Run command
     --partitions 1`
 at root of solution to create topic with name "purchases"
 
+### Consume Topic in docker
+**command**
+`docker exec -i --tty ${docker_container} kafka-console-consumer --bootstrap-server ${docker_container}:9092 --topic ${topic_name} --from-beginning`
+**example**
+`docker exec -i --tty broker-test kafka-console-consumer --bootstrap-server broker-test:9092 --topic testHelloWorld --from-beginning`
+
+
 ### Consoles
 #### Producer
 At path "./consoles/bbl.mb.core.message.consumer"

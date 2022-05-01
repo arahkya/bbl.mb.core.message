@@ -1,10 +1,9 @@
 namespace bbl.mb.core.message.api.payload
 {
-    public class MessagePayload<T> : IMessagePayload<T>
-        where T : class
+    public class MessagePayload : IMessagePayload
     {
-        public string Topic { get; set; }
         public string Name { get; set; }
-        public T Payload { get; internal set; } = default;
+        public string Topic { get; set; }
+        public string Payload { get; internal set; } = default;
     }
 }
