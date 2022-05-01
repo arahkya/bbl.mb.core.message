@@ -14,12 +14,13 @@ using System.Threading.Tasks;
 
 namespace bbl.mb.core.message.test.tests
 {
-    public class MessageManagerTest
+    public partial class MessageProduceConsumeTest
     {
-        [Fact]
-        public async void PostMessageTest_MustSuccess()
+        private readonly IMessageProducer messageProducer;
+        private readonly IMessageConsumer messageConsumer;
+
+        public MessageProduceConsumeTest()
         {
-            // Arrange
             var serviceCollection = new ServiceCollection();
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
@@ -31,6 +32,14 @@ namespace bbl.mb.core.message.test.tests
             serviceCollection.AddBBLMessageService(configuration);
 
             var services = serviceCollection.BuildServiceProvider();
+            this.messageProducer = services.GetRequiredService<IMessageProducer>();
+            this.messageConsumer = services.GetRequiredService<IMessageConsumer>();
+        }
+
+        [Fact]
+        public async void PostMessageTest_MustSuccess()
+        {
+            // Arrange
             var messagePayload = new MessagePayload<string>
             {
                 Topic = "purchases",
@@ -38,8 +47,7 @@ namespace bbl.mb.core.message.test.tests
             };
 
             // Action
-            var messageMgr = services.GetRequiredService<IMessageProducer>();
-            var postResult = await messageMgr.PostAsync(messagePayload);
+            var postResult = await messageProducer.PostAsync(messagePayload);
 
             // Assert
             Assert.True(postResult.IsSuccess);
@@ -51,30 +59,16 @@ namespace bbl.mb.core.message.test.tests
         public void GetMessageTest_MustSuccess()
         {
             // Arrange
-            var serviceCollection = new ServiceCollection();
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new[] {
-                    new KeyValuePair<string,string>("kafka:bootstrap:servers","localhost:9092"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","10")
-                })
-                .Build();
-
-            serviceCollection.AddBBLMessageService(configuration);
-
-            var services = serviceCollection.BuildServiceProvider();
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             var tasks = new Task[2];
-            // Producer
             var messagePayload = new MessagePayload<string>
             {
                 Topic = "purchases",
                 Payload = "This is test message."
             };
-            var messageProducer = services.GetRequiredService<IMessageProducer>();
-            // Consumer
-            var messageConsumer = services.GetRequiredService<IMessageConsumer>();
+            
             var messageConsumeObserver = new MessageConsumeObserver();
-            var messageConsumerConfigure = new MessageConsumerConfigure{ Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Earliest };
+            var messageConsumerConfigure = new MessageConsumerConfigure { Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Earliest };
 
             // Action
             messageConsumer.Subscribe(messageConsumeObserver);
