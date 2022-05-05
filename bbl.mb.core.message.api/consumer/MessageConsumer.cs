@@ -9,6 +9,8 @@ namespace bbl.mb.core.message.api.consumer
         private List<IObserver<string>> observers = new List<IObserver<string>>();
         private readonly MessageConfigure _messageConfigure;
 
+        public bool IsReady { get; private set; }
+
         public IDisposable Subscribe(IObserver<string> observer)
         {
             var subscriber = new MessageObserver(this.observers, observer);
@@ -41,23 +43,28 @@ namespace bbl.mb.core.message.api.consumer
 
         public void StartConsume(MessageConsumerConfigure messageConsumerConfigure, CancellationToken cancellationToken)
         {
-            var bootstrapServerValuePair = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
+            var bootstrapServerValuePair = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.ServerAddress);
             var groupIdValuePair = new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId);
-            var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString());
-            using (var consumer = new ConsumerBuilder<string, string>(new[]
+            var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString());                        
+            var protocal = new KeyValuePair<string, string>("security.protocol", "SSL");
+            var caPath = new KeyValuePair<string,string>("ssl.ca.location", this._messageConfigure.CAPath.ToString());
+            var consumerBuilder = new ConsumerBuilder<string, string>(new[]
             {
                 bootstrapServerValuePair,
                 groupIdValuePair,
-                offsetResetValuePair
-            }).Build())
+                offsetResetValuePair,
+                protocal,
+                caPath
+            });
+
+            using (var consumer = consumerBuilder.Build())
             {
                 consumer.Subscribe(messageConsumerConfigure.Topic);
                 try
                 {
                     while (true)
-                    {
+                    {                                           
                         var cr = consumer.Consume(cancellationToken);
-                        //Console.WriteLine($"Consumed event from topic {topic} with key {cr.Message.Key,-10} and value {cr.Message.Value}");
 
                         foreach (IMessageConsumeObserver item in observers)
                         {

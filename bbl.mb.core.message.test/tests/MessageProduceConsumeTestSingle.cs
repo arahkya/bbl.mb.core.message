@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Threading;
 using bbl.mb.core.message.test.observers;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace bbl.mb.core.message.test.tests
 {
@@ -24,8 +25,9 @@ namespace bbl.mb.core.message.test.tests
             var serviceCollection = new ServiceCollection();
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
-                    new KeyValuePair<string,string>("kafka:bootstrap:servers","localhost:9092"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","10")
+                    new KeyValuePair<string,string>("kafka:bootstrap:servers","127.0.0.1:9093"),
+                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","30"),                    
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:keystore:location","/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/ca-root.crt")
                 })
                 .Build();
 
@@ -37,6 +39,7 @@ namespace bbl.mb.core.message.test.tests
         }
 
         [Fact]
+        [Trait("Produce", "Single")]
         public async void PostMessageTest_MustSuccess()
         {
             // Arrange
@@ -57,33 +60,40 @@ namespace bbl.mb.core.message.test.tests
         }
 
         [Fact]
+        [Trait("Consumer", "Single")]
         public void GetMessageTest_MustSuccess()
         {
             // Arrange
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var tasks = new Task[2];
             var messagePayload = new MessagePayload
             {
                 Name = "TestMessage",
                 Topic = "purchases",
                 Payload = "This is test message."
             };
-            
+
             var messageConsumeObserver = new MessageConsumeObserver();
-            var messageConsumerConfigure = new MessageConsumerConfigure { Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Earliest };
+            var messageConsumerConfigure = new MessageConsumerConfigure { Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Latest };
+
+            messageConsumer.Subscribe(messageConsumeObserver);
 
             // Action
-            messageConsumer.Subscribe(messageConsumeObserver);
-            tasks[0] = Task.Run(() =>
+            var task1 = Task.Run(() =>
             {
                 messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
             });
-            tasks[1] = messageProducer.PostAsync(messagePayload);
 
-            Task.WaitAll(tasks);
+            var task2 = messageProducer.PostAsync(messagePayload);
+
+            Task.WaitAll(new[] 
+            {
+                task1,
+                task2
+            });
 
             // Assert
             Assert.True(messageConsumeObserver.Messages.Any());
+            Assert.Equal(messagePayload.Payload, messageConsumeObserver.Messages.First());
         }
     }
 }

@@ -17,8 +17,15 @@ namespace bbl.mb.core.message.api.producer
         public async Task<MessageActionResult> PostAsync(MessagePayload messagePayload)
         {
             var messageActionResult = new MessageActionResult();
-            var bootstrapServer = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.Uri.ToString());
-            var producerBuilder = new ProducerBuilder<string, string>(new[] { bootstrapServer });
+            var bootstrapServer = new KeyValuePair<string, string>("bootstrap.servers", "127.0.0.1:9093");            
+            var caPath = new KeyValuePair<string,string>("ssl.ca.location", this._messageConfigure.CAPath.ToString());            
+            var protocal = new KeyValuePair<string,string>("security.protocol", "SSL");
+            var producerBuilder = new ProducerBuilder<string, string>(new[] 
+            { 
+                bootstrapServer,
+                protocal,
+                caPath              
+            });
 
             using (var producer = producerBuilder.Build())
             {
@@ -26,7 +33,7 @@ namespace bbl.mb.core.message.api.producer
                 messageActionResult.MessageId = Guid.NewGuid();
 
                 try
-                {
+                {                    
                     var deliveryReport = await producer.ProduceAsync(messagePayload.Topic, kafkaMessage);
                     producer.Flush(this._messageConfigure.Timeout);
 

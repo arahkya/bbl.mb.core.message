@@ -47,9 +47,9 @@ namespace bbl.mb.core.message.test.tests
             messageConsumer.StartConsume(new MessageConsumerConfigure
             {
                 GroupdId = "TestMultipleProductMessages",
-                Offset = api.consumer.MessageConsumeOffset.Latest,
+                Offset = api.consumer.MessageConsumeOffset.Earliest,
                 Topic = topic
-            },new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token);
+            },new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token);
 
             Assert.True(produceTasks.All(p => p.GetAwaiter().GetResult().IsSuccess));
             Assert.True(messageObserver.Messages.Count() == produceTasks.Length);
