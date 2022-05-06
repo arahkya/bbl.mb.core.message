@@ -9,22 +9,6 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  # broker:
-  #   image: confluentinc/cp-kafka:7.0.0
-  #   container_name: broker-test
-  #   ports:
-  #     - "9092:9092"
-  #   depends_on:
-  #     - zookeeper-test
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-
   broker:
     image: confluentinc/cp-kafka:7.0.0
     depends_on:
@@ -36,14 +20,14 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,SSL://localhost:9093
-      # KAFKA_SSL_CLIENT_AUTH: 'required'
+      KAFKA_SSL_CLIENT_AUTH: 'required'
       KAFKA_SSL_KEYSTORE_TYPE: 'JKS'
       KAFKA_SSL_KEYSTORE_FILENAME: '/certs/server.keystore.jks'
       KAFKA_SSL_KEYSTORE_CREDENTIALS: '/certs/passwordfile'
       KAFKA_SSL_KEY_CREDENTIALS: '/certs/passwordfile'
-      # KAFKA_SSL_TRUSTSTORE_TYPE: 'JKS'
-      # KAFKA_SSL_TRUSTSTORE_FILENAME: '/certs/server.truststore.jks'
-      # KAFKA_SSL_TRUSTSTORE_CREDENTIALS: '/certs/passwordfile'
+      KAFKA_SSL_TRUSTSTORE_TYPE: 'JKS'
+      KAFKA_SSL_TRUSTSTORE_FILENAME: '/certs/server.truststore.jks'
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: '/certs/passwordfile'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1

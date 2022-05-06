@@ -44,17 +44,23 @@ namespace bbl.mb.core.message.api.consumer
         public void StartConsume(MessageConsumerConfigure messageConsumerConfigure, CancellationToken cancellationToken)
         {
             var bootstrapServerValuePair = new KeyValuePair<string, string>("bootstrap.servers", this._messageConfigure.ServerAddress);
+            var bootstrapServerTimeout = new KeyValuePair<string, string>("request.timeout.ms", this._messageConfigure.Timeout.TotalMilliseconds.ToString());
             var groupIdValuePair = new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId);
             var offsetResetValuePair = new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString());                        
             var protocal = new KeyValuePair<string, string>("security.protocol", "SSL");
             var caPath = new KeyValuePair<string,string>("ssl.ca.location", this._messageConfigure.CAPath.ToString());
+            var clientCertPath = new KeyValuePair<string, string>("ssl.certificate.location", this._messageConfigure.ClientCertificatePath.ToString());            
+            var keyPath = new KeyValuePair<string, string>("ssl.key.location", this._messageConfigure.KeyPath.ToString());
             var consumerBuilder = new ConsumerBuilder<string, string>(new[]
             {
                 bootstrapServerValuePair,
+                bootstrapServerTimeout,
                 groupIdValuePair,
                 offsetResetValuePair,
                 protocal,
-                caPath
+                caPath,
+                clientCertPath,
+                keyPath
             });
 
             using (var consumer = consumerBuilder.Build())

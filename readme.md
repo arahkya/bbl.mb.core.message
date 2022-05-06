@@ -12,7 +12,7 @@ at root of solution to create topic with name "purchases"
 ### Topic List
 Run command 
 `docker compose exec broker kafka-topics --list --bootstrap-server localhost:9092`
-at root of solution to create topic with name "purchases"
+
 
 ### Consume Topic in docker
 **command**

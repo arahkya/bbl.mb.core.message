@@ -10,6 +10,10 @@ namespace bbl.mb.core.message.api.configures
 
         public string Protocal { get; set; }
 
-        public DirectoryInfo CAPath { get; set; }
-    }        
+        public FileInfo CAPath { get; set; }
+
+        public FileInfo ClientCertificatePath { get; set; }
+
+        public FileInfo KeyPath { get; set; }
+    }
 }

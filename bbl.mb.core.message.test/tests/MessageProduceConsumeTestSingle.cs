@@ -25,9 +25,11 @@ namespace bbl.mb.core.message.test.tests
             var serviceCollection = new ServiceCollection();
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
-                    new KeyValuePair<string,string>("kafka:bootstrap:servers","127.0.0.1:9093"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:timeout","30"),                    
-                    new KeyValuePair<string,string>("kafka:bootstrap:security:keystore:location","/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/ca-root.crt")
+                    new KeyValuePair<string,string>("kafka:bootstrap:servers", "127.0.0.1:9093"),
+                    new KeyValuePair<string,string>("kafka:bootstrap:timeout", "10"),                    
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:keystore:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/ca-root.crt"),
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-certificate:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/test_client.crt"),
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-key:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/test_client.key")
                 })
                 .Build();
 

@@ -13,6 +13,7 @@ namespace bbl.mb.core.message.test.tests
     public partial class MessageProduceConsumeTest
     {
         [Fact]
+        [Trait("Consumer", "Multiple")]
         public async void MultipleProductMessges_MustSuccess()
         {
             // Arrange

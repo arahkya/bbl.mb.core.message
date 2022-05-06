@@ -28,7 +28,9 @@ namespace bbl.mb.core.message.api.extensions
 
                 msgConfig.ServerAddress = config.GetValue<string>("kafka:bootstrap:servers");
                 msgConfig.Timeout = TimeSpan.FromSeconds(config.GetValue<int>("kafka:bootstrap:timeout"));
-                msgConfig.CAPath = new DirectoryInfo(config.GetValue<string>("kafka:bootstrap:security:keystore:location"));                
+                msgConfig.CAPath = new FileInfo(config.GetValue<string>("kafka:bootstrap:security:keystore:location"));
+                msgConfig.ClientCertificatePath = new FileInfo(config.GetValue<string>("kafka:bootstrap:security:client-certificate:location"));
+                msgConfig.KeyPath = new FileInfo(config.GetValue<string>("kafka:bootstrap:security:client-key:location"));
             });
             services.AddSingleton<IMessageProducer, MessageProducer>();
             services.AddSingleton<IMessageConsumer, MessageConsumer>();
