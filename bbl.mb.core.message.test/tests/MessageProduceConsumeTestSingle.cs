@@ -85,7 +85,10 @@ namespace bbl.mb.core.message.test.tests
                 messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
             });
 
-            var task2 = messageProducer.PostAsync(messagePayload);
+            var task2 = Task.Run(async () => {
+                await Task.Delay(Convert.ToInt16(TimeSpan.FromSeconds(3).TotalMilliseconds));
+                await messageProducer.PostAsync(messagePayload);
+            });
 
             Task.WaitAll(new[] 
             {
