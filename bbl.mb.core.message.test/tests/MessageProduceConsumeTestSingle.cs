@@ -12,6 +12,7 @@ using System.Threading;
 using bbl.mb.core.message.test.observers;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using System.IO;
 
 namespace bbl.mb.core.message.test.tests
 {
@@ -23,13 +24,17 @@ namespace bbl.mb.core.message.test.tests
         public MessageProduceConsumeTest()
         {
             var serviceCollection = new ServiceCollection();
+
+            string executePath = Environment.CurrentDirectory;
+            string solutionPath = Path.GetFullPath("../../../../", executePath);
+
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
                     new KeyValuePair<string,string>("kafka:bootstrap:servers", "127.0.0.1:9093"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:timeout", "10"),                    
-                    new KeyValuePair<string,string>("kafka:bootstrap:security:keystore:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/ca-root.crt"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-certificate:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/test_client.crt"),
-                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-key:location", "/Users/arrakyambupah/Sources/bbl.mb.core.message/certs/test_client.key")
+                    new KeyValuePair<string,string>("kafka:bootstrap:timeout", "10"),
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:keystore:location", Path.Combine(solutionPath, "certs", "ca-root.crt")),
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-certificate:location", Path.Combine(solutionPath,"certs", "test_client.crt")),
+                    new KeyValuePair<string,string>("kafka:bootstrap:security:client-key:location", Path.Combine(solutionPath,"certs", "test_client.key"))
                 })
                 .Build();
 
@@ -85,13 +90,14 @@ namespace bbl.mb.core.message.test.tests
                 messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
             });
 
-            var task2 = Task.Run(async () => {
+            var task2 = Task.Run(async () =>
+            {
                 int delaySecond = 5; // Increase this if test failed. 
                 await Task.Delay(Convert.ToInt16(TimeSpan.FromSeconds(delaySecond).TotalMilliseconds));
                 await messageProducer.PostAsync(messagePayload);
             });
 
-            Task.WaitAll(new[] 
+            Task.WaitAll(new[]
             {
                 task1,
                 task2

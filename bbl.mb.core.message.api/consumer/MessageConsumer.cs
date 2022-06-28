@@ -6,83 +6,93 @@ namespace bbl.mb.core.message.api.consumer
 {
     public class MessageConsumer : IMessageConsumer
     {
-        private List<IObserver<string>> observers = new List<IObserver<string>>();
         private readonly MessageConfigure _messageConfigure;
 
-        public bool IsReady { get; private set; }
+        #region Observer
+        private readonly List<IObserver<string>> _observers = new();
 
         public IDisposable Subscribe(IObserver<string> observer)
         {
-            var subscriber = new MessageObserver(this.observers, observer);
-            observers.Add(observer);
+            MessageObserver subscriber = new(_observers, observer);
+            _observers.Add(observer);
 
             return subscriber;
         }
 
         private class MessageObserver : IDisposable
         {
-            private readonly List<IObserver<string>> observers;
-            private readonly IObserver<string> observer;
+            private readonly List<IObserver<string>> _observers;
+            private readonly IObserver<string> _observer;
 
             public MessageObserver(List<IObserver<string>> observers, IObserver<string> observer)
             {
-                this.observers = observers;
-                this.observer = observer;
+                _observers = observers;
+                _observer = observer;
             }
 
             public void Dispose()
             {
-                observers.Remove(observer);
+                _observers.Remove(_observer);
             }
         }
+        #endregion
 
         public MessageConsumer(IOptions<MessageConfigure> messageConfigure)
         {
-            this._messageConfigure = messageConfigure.Value;
+            _messageConfigure = messageConfigure.Value;
         }
 
         public void StartConsume(MessageConsumerConfigure messageConsumerConfigure, CancellationToken cancellationToken)
         {
-            var consumerConfigures = new List<KeyValuePair<string,string>>(this._messageConfigure.ToKeyValuePairs());
-            consumerConfigures.Add(new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId));
-            consumerConfigures.Add(new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString()));
-
-            var consumerBuilder = new ConsumerBuilder<string, string>(consumerConfigures);
-
-            using (var consumer = consumerBuilder.Build())
+            List<KeyValuePair<string, string>> consumerConfigures = new(_messageConfigure.ToKeyValuePairs())
             {
-                consumer.Subscribe(messageConsumerConfigure.Topic);
-                try
-                {
-                    while (true)
-                    {
-                        var cr = consumer.Consume(cancellationToken);
+                new KeyValuePair<string, string>("group.id", messageConsumerConfigure.GroupdId),
+                new KeyValuePair<string, string>("auto.offset.reset", messageConsumerConfigure.Offset.ToString())
+            };
 
-                        foreach (IMessageConsumeObserver item in observers)
-                        {
-                            item.Configure = messageConsumerConfigure;
-                            item.OnNext(cr.Message.Value);
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
+            ConsumerBuilder<string, string> consumerBuilder = new(consumerConfigures);
+
+            using IConsumer<string, string> consumer = consumerBuilder.Build();
+            consumer.Subscribe(messageConsumerConfigure.Topic);
+
+            try
+            {
+                if (messageConsumerConfigure.Partition.HasValue)
                 {
-                    foreach (var item in observers)
+                    TopicPartition partition = new(messageConsumerConfigure.Topic, new Partition(messageConsumerConfigure.Partition.Value));
+                    consumer.Assign(partition);
+                }
+
+                while (true)
+                {
+                    // Thread will block here until it has new message to consume.
+                    ConsumeResult<string, string> cr = consumer.Consume(cancellationToken);
+
+                    // After got new message MessageConsumer will publish the message to each observers.
+                    foreach (IMessageConsumeObserver item in _observers)
                     {
-                        item.OnCompleted();
+                        item.Configure = messageConsumerConfigure;
+                        item.OnNext(cr.Message.Value);
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (OperationCanceledException)
+            {
+                foreach (IObserver<string> item in _observers)
                 {
-                    foreach (var item in observers)
-                    {
-                        item.OnError(ex);
-                    }
+                    item.OnCompleted();
                 }
-                finally
+            }
+            catch (Exception ex)
+            {
+                foreach (IObserver<string> item in _observers)
                 {
-                    consumer.Close();
+                    item.OnError(ex);
                 }
+            }
+            finally
+            {
+                consumer.Close();
             }
         }
     }
