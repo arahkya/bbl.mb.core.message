@@ -18,16 +18,26 @@ namespace bbl.mb.core.message.api.producer
         {
             var messageActionResult = new MessageActionResult();
             var producerConfigures = this._messageConfigure.ToKeyValuePairs();
-            var producerBuilder = new ProducerBuilder<string,string>(producerConfigures);
+            var producerBuilder = new ProducerBuilder<string, string>(producerConfigures);
 
             using (var producer = producerBuilder.Build())
             {
                 var kafkaMessage = new Message<string, string> { Key = messagePayload.Name, Value = messagePayload.Payload };
                 messageActionResult.MessageId = Guid.NewGuid();
 
+                DeliveryResult<string, string> deliveryReport;
+
                 try
                 {
-                    var deliveryReport = await producer.ProduceAsync(messagePayload.Topic, kafkaMessage);
+                    if (messagePayload.Partition.HasValue)
+                    {
+                        TopicPartition topicPartition = new TopicPartition(messagePayload.Topic, new Partition(messagePayload.Partition.Value));
+                        deliveryReport = await producer.ProduceAsync(topicPartition, kafkaMessage);
+                    }
+                    else
+                    {
+                        deliveryReport = await producer.ProduceAsync(messagePayload.Topic, kafkaMessage);
+                    }
                     producer.Flush(this._messageConfigure.Timeout);
 
                     messageActionResult.IsSuccess = true;

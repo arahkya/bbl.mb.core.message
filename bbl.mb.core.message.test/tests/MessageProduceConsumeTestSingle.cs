@@ -86,7 +86,8 @@ namespace bbl.mb.core.message.test.tests
             });
 
             var task2 = Task.Run(async () => {
-                await Task.Delay(Convert.ToInt16(TimeSpan.FromSeconds(3).TotalMilliseconds));
+                int delaySecond = 5; // Increase this if test failed. 
+                await Task.Delay(Convert.ToInt16(TimeSpan.FromSeconds(delaySecond).TotalMilliseconds));
                 await messageProducer.PostAsync(messagePayload);
             });
 
