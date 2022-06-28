@@ -19,7 +19,7 @@ namespace bbl.mb.core.message.api.consumer
             return subscriber;
         }
 
-        private class MessageObserver : IDisposable
+        private sealed class MessageObserver : IDisposable
         {
             private readonly List<IObserver<string>> _observers;
             private readonly IObserver<string> _observer;
@@ -31,8 +31,14 @@ namespace bbl.mb.core.message.api.consumer
             }
 
             public void Dispose()
-            {
+            {   
                 _observers.Remove(_observer);
+                GC.SuppressFinalize(this);
+            }
+
+            ~MessageObserver()
+            {
+                Dispose();
             }
         }
         #endregion
@@ -69,7 +75,7 @@ namespace bbl.mb.core.message.api.consumer
                     ConsumeResult<string, string> cr = consumer.Consume(cancellationToken);
 
                     // After got new message MessageConsumer will publish the message to each observers.
-                    foreach (IMessageConsumeObserver item in _observers)
+                    foreach (IMessageConsumeObserver item in _observers.Cast<IMessageConsumeObserver>())
                     {
                         item.Configure = messageConsumerConfigure;
                         item.OnNext(cr.Message.Value);

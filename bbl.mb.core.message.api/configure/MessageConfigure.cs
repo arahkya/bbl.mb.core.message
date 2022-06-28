@@ -1,5 +1,3 @@
-using System.Security;
-
 namespace bbl.mb.core.message.api.configures
 {
     public class MessageConfigure
@@ -18,12 +16,12 @@ namespace bbl.mb.core.message.api.configures
 
         internal IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs()
         {
-            var bootstrapServer = new KeyValuePair<string, string>("bootstrap.servers", this.ServerAddress);
-            var bootstrapServerTimeout = new KeyValuePair<string, string>("request.timeout.ms", this.Timeout.TotalMilliseconds.ToString());
-            var caPath = new KeyValuePair<string, string>("ssl.ca.location", this.CAPath.ToString());
-            var protocal = new KeyValuePair<string, string>("security.protocol", "SSL");
-            var clientCertPath = new KeyValuePair<string, string>("ssl.certificate.location", this.ClientCertificatePath.ToString());
-            var keyPath = new KeyValuePair<string, string>("ssl.key.location", this.KeyPath.ToString());
+            KeyValuePair<string, string> bootstrapServer = new("bootstrap.servers", this.ServerAddress);
+            KeyValuePair<string, string> bootstrapServerTimeout = new("request.timeout.ms", this.Timeout.TotalMilliseconds.ToString());
+            KeyValuePair<string, string> caPath = new("ssl.ca.location", this.CAPath.ToString());
+            KeyValuePair<string, string> protocal = new("security.protocol", "SSL");
+            KeyValuePair<string, string> clientCertPath = new("ssl.certificate.location", this.ClientCertificatePath.ToString());
+            KeyValuePair<string, string> keyPath = new("ssl.key.location", this.KeyPath.ToString());
 
             return new[] 
             {

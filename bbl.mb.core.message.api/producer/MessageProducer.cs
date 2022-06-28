@@ -11,18 +11,18 @@ namespace bbl.mb.core.message.api.producer
 
         public MessageProducer(IOptions<MessageConfigure> messageConfigure)
         {
-            this._messageConfigure = messageConfigure.Value;
+            _messageConfigure = messageConfigure.Value;
         }
 
         public async Task<MessageActionResult> PostAsync(MessagePayload messagePayload)
         {
-            var messageActionResult = new MessageActionResult();
-            var producerConfigures = this._messageConfigure.ToKeyValuePairs();
-            var producerBuilder = new ProducerBuilder<string, string>(producerConfigures);
+            MessageActionResult messageActionResult = new();
+            IEnumerable<KeyValuePair<string, string>> producerConfigures = _messageConfigure.ToKeyValuePairs();
+            ProducerBuilder<string, string> producerBuilder = new(producerConfigures);
 
-            using (var producer = producerBuilder.Build())
+            using (IProducer<string, string> producer = producerBuilder.Build())
             {
-                var kafkaMessage = new Message<string, string> { Key = messagePayload.Name, Value = messagePayload.Payload };
+                Message<string, string> kafkaMessage = new() { Key = messagePayload.Name, Value = messagePayload.Payload };
                 messageActionResult.MessageId = Guid.NewGuid();
 
                 DeliveryResult<string, string> deliveryReport;
@@ -31,14 +31,14 @@ namespace bbl.mb.core.message.api.producer
                 {
                     if (messagePayload.Partition.HasValue)
                     {
-                        TopicPartition topicPartition = new TopicPartition(messagePayload.Topic, new Partition(messagePayload.Partition.Value));
+                        TopicPartition topicPartition = new(messagePayload.Topic, new Partition(messagePayload.Partition.Value));
                         deliveryReport = await producer.ProduceAsync(topicPartition, kafkaMessage);
                     }
                     else
                     {
                         deliveryReport = await producer.ProduceAsync(messagePayload.Topic, kafkaMessage);
                     }
-                    producer.Flush(this._messageConfigure.Timeout);
+                    producer.Flush(_messageConfigure.Timeout);
 
                     messageActionResult.IsSuccess = true;
                 }

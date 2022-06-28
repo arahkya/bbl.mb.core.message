@@ -1,25 +1,24 @@
-using Xunit;
-using bbl.mb.core.message.api.extensions;
 using bbl.mb.core.message.api.consumer;
-using bbl.mb.core.message.api.producer;
+using bbl.mb.core.message.api.extensions;
 using bbl.mb.core.message.api.payload;
-using System;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Threading;
+using bbl.mb.core.message.api.producer;
 using bbl.mb.core.message.test.observers;
-using System.Threading.Tasks;
-using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace bbl.mb.core.message.test.tests
 {
     public partial class MessageProduceConsumeTest
     {
-        private readonly IMessageProducer messageProducer;
-        private readonly IMessageConsumer messageConsumer;
+        private readonly IMessageProducer _messageProducer;
+        private readonly IMessageConsumer _messageConsumer;
 
         public MessageProduceConsumeTest()
         {
@@ -28,7 +27,7 @@ namespace bbl.mb.core.message.test.tests
             string executePath = Environment.CurrentDirectory;
             string solutionPath = Path.GetFullPath("../../../../", executePath);
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot? configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[] {
                     new KeyValuePair<string,string>("kafka:bootstrap:servers", "127.0.0.1:9093"),
                     new KeyValuePair<string,string>("kafka:bootstrap:timeout", "10"),
@@ -40,9 +39,9 @@ namespace bbl.mb.core.message.test.tests
 
             serviceCollection.AddBBLMessageService(configuration);
 
-            var services = serviceCollection.BuildServiceProvider();
-            this.messageProducer = services.GetRequiredService<IMessageProducer>();
-            this.messageConsumer = services.GetRequiredService<IMessageConsumer>();
+            ServiceProvider? services = serviceCollection.BuildServiceProvider();
+            _messageProducer = services.GetRequiredService<IMessageProducer>();
+            _messageConsumer = services.GetRequiredService<IMessageConsumer>();
         }
 
         [Fact]
@@ -50,7 +49,7 @@ namespace bbl.mb.core.message.test.tests
         public async void PostMessageTest_MustSuccess()
         {
             // Arrange
-            var messagePayload = new MessagePayload
+            MessagePayload? messagePayload = new()
             {
                 Name = "TestMessage",
                 Topic = "purchases",
@@ -58,7 +57,7 @@ namespace bbl.mb.core.message.test.tests
             };
 
             // Action
-            var postResult = await messageProducer.PostAsync(messagePayload);
+            MessageActionResult? postResult = await _messageProducer.PostAsync(messagePayload);
 
             // Assert
             Assert.True(postResult.IsSuccess);
@@ -71,30 +70,30 @@ namespace bbl.mb.core.message.test.tests
         public void GetMessageTest_MustSuccess()
         {
             // Arrange
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var messagePayload = new MessagePayload
+            CancellationTokenSource? cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            MessagePayload? messagePayload = new()
             {
                 Name = "TestMessage",
                 Topic = "purchases",
                 Payload = "This is test message."
             };
 
-            var messageConsumeObserver = new MessageConsumeObserver();
-            var messageConsumerConfigure = new MessageConsumerConfigure { Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Latest };
+            MessageConsumeObserver? messageConsumeObserver = new();
+            MessageConsumerConfigure? messageConsumerConfigure = new() { Topic = "purchases", GroupdId = "test_group_id", Offset = MessageConsumeOffset.Latest };
 
-            messageConsumer.Subscribe(messageConsumeObserver);
+            _messageConsumer.Subscribe(messageConsumeObserver);
 
             // Action
-            var task1 = Task.Run(() =>
+            Task? task1 = Task.Run(() =>
             {
-                messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
+                _messageConsumer.StartConsume(messageConsumerConfigure, cancellationTokenSource.Token);
             });
 
-            var task2 = Task.Run(async () =>
+            Task? task2 = Task.Run(async () =>
             {
                 int delaySecond = 5; // Increase this if test failed. 
                 await Task.Delay(Convert.ToInt16(TimeSpan.FromSeconds(delaySecond).TotalMilliseconds));
-                await messageProducer.PostAsync(messagePayload);
+                await _messageProducer.PostAsync(messagePayload);
             });
 
             Task.WaitAll(new[]

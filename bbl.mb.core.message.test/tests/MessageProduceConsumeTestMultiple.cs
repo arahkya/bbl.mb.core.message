@@ -17,35 +17,35 @@ namespace bbl.mb.core.message.test.tests
         public async void MultipleProductMessges_MustSuccess()
         {
             // Arrange
-            var topic = "testHelloWorld";
-            var produceTasks = new Task<MessageActionResult>[30];
-            Func<object?, MessageActionResult> produceFunc = (object? param) =>
+            string? topic = "testHelloWorld";
+            Task<MessageActionResult>[]? produceTasks = new Task<MessageActionResult>[30];
+            MessageActionResult produceFunc(object? param)
             {
-                var index = param?.ToString();
-                var messagePayload = new MessagePayload
+                string? index = param?.ToString();
+                MessagePayload? messagePayload = new MessagePayload
                 {
                     Name = $"TesstMessage{index}",
-                    Payload = $"{DateTime.Now.ToString()} - This is test meesage from task : {index}",
+                    Payload = $"{DateTime.Now} - This is test meesage from task : {index}",
                     Topic = topic
                 };
 
-                var result = messageProducer.PostAsync(messagePayload);
+                Task<MessageActionResult>? result = _messageProducer.PostAsync(messagePayload);
 
                 return result.Result;
-            };
+            }
 
             // Action
             for (int i = 1; i <= produceTasks.Length; i++)
             {
-                produceTasks[i - 1] = Task.Factory.StartNew<MessageActionResult>(produceFunc, i);
+                produceTasks[i - 1] = Task.Factory.StartNew(produceFunc, i);
             }
 
             // Assert
             await Task.WhenAll(produceTasks);
-            var messageObserver = new MessageConsumeObserver();
+            MessageConsumeObserver? messageObserver = new MessageConsumeObserver();
 
-            messageConsumer.Subscribe(messageObserver);
-            messageConsumer.StartConsume(new MessageConsumerConfigure
+            _messageConsumer.Subscribe(messageObserver);
+            _messageConsumer.StartConsume(new MessageConsumerConfigure
             {
                 GroupdId = "TestMultipleProductMessages",
                 Offset = api.consumer.MessageConsumeOffset.Earliest,
@@ -53,7 +53,7 @@ namespace bbl.mb.core.message.test.tests
             },new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token);
 
             Assert.True(produceTasks.All(p => p.GetAwaiter().GetResult().IsSuccess));
-            Assert.True(messageObserver.Messages.Count() == produceTasks.Length);
+            Assert.True(messageObserver.Messages.Count == produceTasks.Length);
         }
     }
 }
